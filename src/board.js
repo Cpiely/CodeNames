@@ -31,7 +31,8 @@ class Board extends React.Component {
 
     giveClue = () => {
         if (this.props.ctx.phase !== 'Clue Phase') return;
-        this.props.moves.giveClue();
+        if (!this.isValid(this.state['clue'].toUpperCase())) return alert('Invalid Clue');
+        this.props.moves.giveClue(this.state['clue'], this.state['amount']);
         this.props.events.endPhase();
     }
 
@@ -39,6 +40,14 @@ class Board extends React.Component {
         if (!this.props.isActive) return false;
         if (this.props.G.cells[id] !== null) return true;
         return true;
+    }
+
+    isValid(clue) {
+        if (clue.includes(' ')) return false;
+        if (this.props.G.cells.indexOf(clue.toUpperCase()) !== -1) return false;
+        if (this.props.G.given_clues.indexOf(clue.toUpperCase()) !== -1) return false;
+        return true
+
     }
     
     render() {

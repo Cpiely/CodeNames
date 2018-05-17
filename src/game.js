@@ -62,6 +62,7 @@ const CodeNames = Game({
         cells: cardlist,
         neutral_cards: neutral_cards,
         death_card: death_card,
+        given_clues: [],
         teams: {
             0: {
                 name: "Red",
@@ -82,16 +83,17 @@ const CodeNames = Game({
         giveClue(G, ctx, word, amount) {
             const clue = word;
             const count = amount;
-            return { ...G, clue, count}
+            const given_clues = [...G.given_clues]
+            given_clues.push(clue.toUpperCase())
+            return { ...G, clue, count, given_clues}
         },
         clickCell(G, ctx, id) {
             const cells = [...G.cells];
-
             if (cells[id] === null) {
                 cells[id] = ctx.currentPlayer;
             }
 
-            return { ...G, cells };
+            return { ...G, cells};
         },
     },
 
