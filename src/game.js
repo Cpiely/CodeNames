@@ -5,16 +5,10 @@ const initial_chooser = randomNoRepeats(cardbank);
 const cardlist = Shuffle(initial_chooser, 25);
 const distribution_chooser = randomNoRepeats(cardlist);
 const spy_card = Math.round(Math.random());
-
 const neutral_cards = Shuffle(distribution_chooser, 7);
 const blue_cards = Shuffle(distribution_chooser, 8+spy_card);
 const red_cards = Shuffle(distribution_chooser, 8+(1-spy_card));
 const death_card = Shuffle(distribution_chooser, 1);
-
-var teams = {
-    0: red_cards.length,
-    1: blue_cards.length
-}
 
 function randomNoRepeats(array) {
   var copy = array.slice(0);
@@ -63,15 +57,25 @@ function IsVictory(cells) {
 }
 
 const CodeNames = Game({
-    //name: 'codenames',
+    name: 'codenames',
     setup: (G, ctx) => ({
         cells: cardlist,
-        red_cards: red_cards,
-        blue_cards: blue_cards,
         neutral_cards: neutral_cards,
         death_card: death_card,
+        teams: {
+            0: {
+                name: "Red",
+                cards: red_cards,
+                remaining: red_cards
+            },
+            1: {
+                name: "Blue",
+                cards: blue_cards,
+                remaining: blue_cards
+            }    
+        },
         clue: null,
-        count: Math.random()
+        count: null
     }),
 
     moves: {
@@ -105,7 +109,7 @@ const CodeNames = Game({
         ],
         movesPerTurn: 2,
         turnOrder: {
-            first: (ctx) => Object.keys(teams).reduce((a,b) => teams[a] > teams[b] ? a : b),
+            first: (G, ctx) => G.teams[0].cards.length > G.teams[1].cards.length ? 1 : 0,
             next: (G, ctx) => (ctx.playOrderPos + 1) % ctx.numPlayers,
         },
         endGameIf: (G, ctx) => {

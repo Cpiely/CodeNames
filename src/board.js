@@ -30,8 +30,6 @@ class Board extends React.Component {
     }
 
     giveClue = () => {
-        alert(this.state.clue);
-        alert(this.state.amount);
         if (this.props.ctx.phase !== 'Clue Phase') return;
         this.props.moves.giveClue();
         this.props.events.endPhase();
@@ -45,10 +43,14 @@ class Board extends React.Component {
     
     render() {
         var disabled = this.props.ctx.phase !== 'Clue Phase';       
-        let winner = '';
-        if (this.props.ctx.gameover !== null) {
-            winner = <div>Winner: {this.props.ctx.gameover}</div>;
-        }
+        var red_remaining = this.props.G.teams[0].remaining.length;
+        var blue_remaining = this.props.G.teams[1].remaining.length;
+        var current_team =  this.props.G.teams[this.props.ctx.currentPlayer].name;
+        var current_phase = this.props.ctx.phase;
+        var winner = '';
+        // if (this.props.ctx.gameover !== null) {
+        //     winner = <div>Winner: {this.props.ctx.gameover}</div>;
+        // }
 
         const cellStyle = {
             border: '1px solid #555',
@@ -73,17 +75,21 @@ class Board extends React.Component {
         }
         return (
             <div>
+                    Current Team: {current_team} <br />
+                    Current Phase: {current_phase} <br />
+                    Red Cards Remaining: {red_remaining} <br />
+                    Blue Cards Remaining: {blue_remaining}
                 <table id="board">
                     <tbody>{tbody}</tbody>
                 </table>
                 <form>
                     <label>
                         Clue:
-                        <input type="text" disabled={disabled} name="clue" value={this.state.clue} onChange={this.handleInputChange}/>
+                        <input type="text" disabled={disabled} name="clue" value={this.state.clue} onChange={this.handleInputChange}/> <br />
                         Amount:
-                        <input type="number" disabled={disabled} name="amount"  value={this.state.amount} onChange={this.handleInputChange}/>
+                        <input type="number" disabled={disabled} name="amount"  min="0" max="9" value={this.state.amount} onChange={this.handleInputChange}/> <br />
                     </label>
-                    <input readOnly value="Submit" onClick={this.giveClue}/>
+                    <input type="button" readOnly value="Submit" onClick={this.giveClue}/>
                 </form>
             {winner}
             </div>
