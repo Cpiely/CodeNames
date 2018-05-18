@@ -1,4 +1,5 @@
 import React from 'react';
+import logo from '../images/codenames.jpg';
 
 class Board extends React.Component {
     constructor(props) {
@@ -14,7 +15,6 @@ class Board extends React.Component {
         const target = event.target;
         const value = target.value;
         const name = target.name;
-
         this.setState({
             [name]: value
         });
@@ -22,84 +22,108 @@ class Board extends React.Component {
 
     onClick = id => {
         if (this.props.ctx.phase !== 'Guess Phase') return;
+        if (this.props.G.board[id].revealed) return;
         if (this.isActive(id)) {
             this.props.moves.clickCell(id);
             this.props.events.endPhase();
-            //this.props.events.endTurn();
         }
     }
 
     giveClue = () => {
         if (this.props.ctx.phase !== 'Clue Phase') return;
         if (!this.isValid(this.state['clue'].toUpperCase())) return alert('Invalid Clue');
-        this.props.moves.giveClue(this.state['clue'], this.state['amount']);
+        this.props.moves.giveClue(this.state['clue'], Number(this.state['amount']));
         this.props.events.endPhase();
     }
 
+    endTurn = () => {
+        this.props.events.endPhase();  
+    }
+
     isActive(id) {
-        if (!this.props.isActive) return false;
-        if (this.props.G.cells[id] !== null) return true;
-        return true;
+        return this.props.isActive;
     }
 
     isValid(clue) {
         if (clue.includes(' ')) return false;
-        if (this.props.G.cells.indexOf(clue.toUpperCase()) !== -1) return false;
+        for (let i = 0; i < this.props.G.board; i++) {
+            if (this.props.G.board[i].value === clue.toUpperCase()) return false;
+        }
         if (this.props.G.given_clues.indexOf(clue.toUpperCase()) !== -1) return false;
         return true
 
     }
     
     render() {
-        var disabled = this.props.ctx.phase !== 'Clue Phase';       
-        var red_remaining = this.props.G.teams[0].remaining.length;
-        var blue_remaining = this.props.G.teams[1].remaining.length;
-        var current_team =  this.props.G.teams[this.props.ctx.currentPlayer].name;
-        var current_phase = this.props.ctx.phase;
-        var winner = '';
-        // if (this.props.ctx.gameover !== null) {
-        //     winner = <div>Winner: {this.props.ctx.gameover}</div>;
-        // }
-
         const cellStyle = {
             border: '1px solid #555',
-            width: '50x',
-            height: '50x',
+            width: '200px',
+            height: '110px',
             lineHeight: '50x',
-            textAlign: 'center'
+            textAlign: 'center',
+            padding: '12px 20px',
+            backgroundImage: `url(${logo})`,
+            backgroundSize: 'cover',
+            overflow: 'hidden',
+            tableLayout: 'fixed',
+            textShadow: '1px 1px 2px white'
         };
-
+        const tableStyle = {
+            tableLayout: 'fixed'
+        }
+        var labelStyle = {}
+        var disabled = this.props.ctx.phase !== 'Clue Phase';       
+        var current_team =  this.props.G.players[this.props.ctx.currentPlayer];
+        var current_phase = this.props.ctx.phase;
+        var winner = '';
+        var clue_type = "text";
+        var amount_type = "number";
+        var button_text = "Submit";
+        var button_on_click = this.giveClue;
+        if (this.props.ctx.phase !== 'Clue Phase') {
+            clue_type = "hidden";
+            amount_type = "hidden";
+            button_text = "End Turn";
+            button_on_click = this.endTurn;
+            labelStyle.visibility = 'hidden'
+        }
         let tbody = [];
         for (let i = 0; i < 5; i++) {
             let cells = [];
             for (let j = 0; j < 5; j++) {
                 const id = 5 * i + j;
+                var revealStyle = JSON.parse(JSON.stringify(cellStyle));
+                if (this.props.G.board[id].revealed) { 
+                    revealStyle.backgroundImage = `url(${this.props.G.images[this.props.G.board[id].team]})`;
+                };
                 cells.push(
-                    <td style={cellStyle} key={id} onClick={() => this.onClick(id)}>
-                        {this.props.G.cells[id]}
-                    </td>
+                    <td style={revealStyle} key={id} onClick={() => this.onClick(id)}>
+                            {this.props.G.board[id].value}
+                    </td> 
                 );
             }
             tbody.push(<tr key={i}>{cells}</tr>);
         }
         return (
-            <div>
-                    Current Team: {current_team} <br />
-                    Current Phase: {current_phase} <br />
-                    Red Cards Remaining: {red_remaining} <br />
-                    Blue Cards Remaining: {blue_remaining}
-                <table id="board">
+            <div className="container">
+                    <h4 align="center">
+                        Current Team: {current_team} <br />
+                        Current Phase: {current_phase} <br />
+                    </h4>
+                <table className="table" id="board" style={tableStyle} align="center">
                     <tbody>{tbody}</tbody>
                 </table>
-                <form>
-                    <label>
-                        Clue:
-                        <input type="text" disabled={disabled} name="clue" value={this.state.clue} onChange={this.handleInputChange}/> <br />
-                        Amount:
-                        <input type="number" disabled={disabled} name="amount"  min="0" max="9" value={this.state.amount} onChange={this.handleInputChange}/> <br />
-                    </label>
-                    <input type="button" readOnly value="Submit" onClick={this.giveClue}/>
-                </form>
+                    <form className="form-inline" onSubmit={this.preventDefault}>
+                        <div className="form-group">
+                            <label style={labelStyle}>Clue:</label> 
+                            <input type={clue_type} className="form-control" disabled={disabled} placeholder="Enter Clue" value={this.state.clue} name="clue" onChange={this.handleInputChange}/> 
+                        </div>
+                        <div className="form-group">
+                            <label style={labelStyle}>Amount:</label>
+                            <input type={amount_type} className="form-control" disabled={disabled} min="0" max="9" value={this.state.amount} name="amount" onChange={this.handleInputChange}/>
+                        </div>
+                        <button type="button" readOnly onSubmit={this.preventDefault} className="btn btn-default col-xs-offset-9 col-xs-3" onClick={button_on_click}>{button_text}</button>
+                    </form>
             {winner}
             </div>
         );
