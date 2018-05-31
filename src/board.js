@@ -23,9 +23,16 @@ class Board extends React.Component {
     onClick = id => {
         if (this.props.ctx.phase !== 'Guess Phase') return;
         if (this.props.G.board[id].revealed) return;
-        if (this.isActive(id)) {
-            this.props.moves.clickCell(id);
-            this.props.events.endPhase();
+        this.props.moves.clickCell(id);
+        if (this.isCorrect(id)) {
+            if (this.props.G.count === 1) {
+                this.props.events.endPhase();
+                this.props.events.endTurn();
+                return;    
+            }
+        } else {   
+            this.props.events.endPhase();         
+            this.props.events.endTurn();
         }
     }
 
@@ -37,12 +44,13 @@ class Board extends React.Component {
     }
 
     endTurn = () => {
-        this.props.events.endPhase();  
+        this.props.events.endPhase();
+        this.props.events.endTurn();  
     }
 
-    isActive(id) {
-        return this.props.isActive;
-    }
+    // isActive(id) {
+    //     return this.props.isActive;
+    // }
 
     isValid(clue) {
         if (clue.includes(' ')) return false;
@@ -52,6 +60,10 @@ class Board extends React.Component {
         if (this.props.G.given_clues.indexOf(clue.toUpperCase()) !== -1) return false;
         return true
 
+    }
+
+    isCorrect(id) {
+        return this.props.G.board[id].team === this.props.G.players[this.props.ctx.currentPlayer]
     }
     
     render() {

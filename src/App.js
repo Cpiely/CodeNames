@@ -9,6 +9,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 const App = Client({
     game: CodeNames,
     board: Board,
+    debug: true
 });
 
 export default App

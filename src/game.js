@@ -114,7 +114,8 @@ const CodeNames = Game({
             if (!board[id].revealed) {
                 board[id].revealed = true;
             }
-            return { ...G, board};
+            const count = G.count - 1;
+            return { ...G, count, board};
         },
     },
 
@@ -129,11 +130,6 @@ const CodeNames = Game({
                 allowedMoves: ['clickCell'],
             }
         ],
-        movesPerTurn: 2,
-        turnOrder: {
-            first: (G, ctx) => G.red_cards.length > G.blue_cards.length ? 1 : 0,
-            next: (G, ctx) => (ctx.playOrderPos + 1) % ctx.numPlayers,
-        },
         endGameIf: (G, ctx) => {
             if (IsVictory(G.cells)) {
                 return ctx.currentPlayer;
